@@ -3,7 +3,7 @@ from scipy import integrate
 import matplotlib.pyplot as plt
 
 #Parameters of the engine
-tau = 9.3 #[-]                  #Compression ration
+tau = 9.3 #[-]                  #Pressure ratio
 D = 0.082 #[m]                  #Diameter of the piston
 C = 0.08 #[m]                   #Piston stroke
 L = 0.136 #[m]                  #Length of the connecting rod

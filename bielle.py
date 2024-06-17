@@ -2,21 +2,21 @@ import numpy as np
 from scipy import integrate
 import matplotlib.pyplot as plt
 
-#Parameters of the engine
-tau = 9.3 #[-]                  #Pressure ratio
-D = 0.082 #[m]                  #Diameter of the piston
-C = 0.08 #[m]                   #Piston stroke
-L = 0.136 #[m]                  #Length of the connecting rod
-mpiston = 0.347 #[kg]           #Mass of the piston
-mbielle = 0.6113 #[kg]          #Mass of the connecting rod
-Q = 2800000 #[J/kg_inlet gas]   #Heat per mass of gas
+# Parameters of the engine and their [units]
+tau = 9.3        # Pressure ratio [-]
+D = 0.082        # Diameter of the piston [m] 
+C = 0.08         # Piston stroke [m] 
+L = 0.136        # Length of the connecting rod [m] 
+mpiston = 0.347  # Mass of the piston [kg]
+mbielle = 0.6113 # Mass of the connecting rod [kg]
+Q = 2800000      # Heat per mass of gas [J/kg_inlet gas]   
 
-#Constants
-R = C/2     #[m]
-m_mol = 0.02897  #[kg/mol]
-Rgaz = 8.3145  #[J/K*mol]
-Rmas = Rgaz/m_mol #[J/kg*K]
-T = 303.15     #[K]
+# Physical constants and their [units]
+R = C/2           # Crank throw [m]
+m_mol = 0.02897   # Dry air molar mass [kg/mol]
+Rgaz = 8.3145     # Gas constant [J/K*mol]
+Rmas = Rgaz/m_mol # Specific gas constant [J/kg*K]
+T = 303.15        # Initial termperature [K]
 
 def Fcrit(Fp,Ft):
     """
@@ -48,8 +48,9 @@ def t_crit(Fc,plan):
     :return:
     The theoretical thickness of the rod
     """
-    E = 2e+11  # Module of elasticity [Pa]
+    E = 2e+11         # Module of elasticity [Pa]
     sigma_c = 4.5e+8  # Resistance to compression [Pa]
+    
     if(plan == "x"):
         alpha = (419 * np.pi*np.pi * E) / (12 * L*L)
     elif(plan == "y"):
@@ -63,38 +64,38 @@ def t_crit(Fc,plan):
 
 def myfunc(rpm, s, theta, thetaC, deltaThetaC):
     """
-    myfunc calculates different physical properties of the engine cycle.
+    myfunc calculates different physical properties of an engine cycle.
 
     :param rpm:
     Rotations per minute of the engine
     :param s:
-    Ration between the initial pressure and atmospheric pressure
+    Ratio between the initial pressure and atmospheric pressure
     :param theta:
-    An array that represents the angle of rotation of the connecting rod in degrees
+    An array that represents the angles of rotation of the connecting rod (in degrees)
     :param thetaC:
-    The angle at which the combustion begins in degrees
+    The angle at which the combustion begins (in degrees)
     :param deltaThetaC:
-    The duration of the combustion in degrees
+    The duration of the combustion (in degrees)
 
     :return:
     This function returns a tuple that contains the following elements respectively:
-    -V_output is an array that represents the volume of the cylinder during the cycle (same size as theta)
-    -Q_output is an array that represents the heat of inside the cylinder during the cycle (same size as theta)
-    -F_pied_output is an array that represents the force experienced by the upper part of the connecting rod (same size as theta)
-    -F_tete_output is an array that represents the force experienced by the lower part of the connecting rod (same size as theta)
-    -p_output is an array that represents the pressure experienced by the piston during the cycle (same size as theta)
-    -t is the theoretical minimal thickness of the connecting rod
-    -dQ and dV represents the derivatives of Q_output and V_output
+    - V_output is an array that represents the volume of the cylinder during the cycle (same size as theta)
+    - Q_output is an array that represents the heat of inside the cylinder during the cycle (same size as theta)
+    - F_pied_output is an array that represents the force experienced by the upper part of the connecting rod (same size as theta)
+    - F_tete_output is an array that represents the force experienced by the lower part of the connecting rod (same size as theta)
+    - p_output is an array that represents the pressure experienced by the piston during the cycle (same size as theta)
+    - t is the minimum theoretical thickness of the connecting rod
+    - dQ and dV represents the derivatives of Q_output and V_output
     """
     Vc = (np.pi * C * D * D) / 4
     beta = L / R
-    p_in = s * 100000     #Initial pressure
-    m = p_in*Vc /(Rmas*T)             #The mass of the gas
+    p_in = s * 100000     # Initial pressure
+    m = p_in*Vc /(Rmas*T) # The mass of the gas
 
     thetaC = -(thetaC*(np.pi)/180)
     deltaThetaC = (deltaThetaC*(np.pi)/180)
     theta = (theta*(np.pi)/180)
-    w = (2*np.pi*rpm)/60                     #Angular frequency [rad/s]
+    w = (2*np.pi*rpm)/60                     # Angular frequency [rad/s]
 
     V_output = (Vc / 2) * (1 - np.cos(theta) + beta - np.sqrt(beta * beta - np.sin(theta) * np.sin(theta))) + ( Vc / (tau - 1))
 
@@ -125,23 +126,23 @@ def myfunc(rpm, s, theta, thetaC, deltaThetaC):
     F_crit = Fcrit(F_pied_output,F_tete_output)
     t_x = t_crit(F_crit,"x")
     t_y = t_crit(F_crit,"y")
-    t = np.maximum(t_x,t_y)   #We pick the maximum thickness
+    t = np.maximum(t_x,t_y)   # We pick the maximum thickness
     return (V_output, Q_output, F_pied_output, F_tete_output, p_output, t,dQ,dV);
 
-#Here is an example on how you can use our function
+# Here is an example on how you can use our function
 theta = np.linspace(-180,180,1000)
-V_out,Q_out,Fp,Ft,p_out,t,dQ,dV = myfunc(2000,1,theta,24,40)
+V_out, Q_out, Fp, Ft, p_out, t, dQ, dV = myfunc(2000,1,theta,24,40)
 
-#plt.plot(theta,dV,'g-')
+# Uncomment if you wish to visualise the results 
+#plt.plot(theta, dV, 'g-')
+#plt.plot(theta, V_out, 'g-')
+#plt.plot(theta, Q_out)
+#plt.plot(theta, dQ, 'g')
+#plt.plot(theta, p_out, 'r')
 
-#plt.plot(theta,V_out,'g-')
-#plt.plot(theta,Q_out)
-#plt.plot(theta,dQ,'g')
-#plt.plot(theta,p_out,'r')
-#plt.plot(theta,p2,'g')
+#plt.plot(theta,Fp,'r')
+#plt.plot(theta,Ft,'g')
+#print("The minimum thickness of the road:",t)
 
-plt.plot(theta,Fp,'r')
-plt.plot(theta,Ft,'g')
-print(t)
 plt.grid('axes=both')
 plt.show()
